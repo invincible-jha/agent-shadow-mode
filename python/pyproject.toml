@@ -1,0 +1,71 @@
+# SPDX-License-Identifier: BSL-1.1
+# Copyright (c) 2026 MuVeraAI Corporation
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent-shadow-mode"
+version = "0.1.0"
+description = "Run an AI agent in shadow mode — observe, compare, and build a trust track record before going live"
+readme = "README.md"
+license = { text = "Business Source License 1.1" }
+requires-python = ">=3.10"
+authors = [
+    { name = "MuVeraAI Corporation", email = "oss@muverai.com" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Testing",
+    "Typing :: Typed",
+]
+dependencies = [
+    "pydantic>=2.6.0",
+]
+
+[project.optional-dependencies]
+langchain = [
+    "langchain-core>=0.2.0",
+]
+crewai = [
+    "crewai>=0.28.0",
+]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.3",
+    "mypy>=1.9",
+]
+
+[project.urls]
+Homepage = "https://github.com/aumos-ai/agent-shadow-mode"
+Documentation = "https://docs.aumos.ai/shadow-mode"
+Repository = "https://github.com/aumos-ai/agent-shadow-mode"
+Changelog = "https://github.com/aumos-ai/agent-shadow-mode/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/shadow_mode"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "TCH"]
+
+[tool.mypy]
+strict = true
+python_version = "3.10"
+warn_unused_ignores = true
+warn_return_any = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

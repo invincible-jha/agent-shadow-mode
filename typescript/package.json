@@ -1,0 +1,42 @@
+{
+  "name": "@aumos/shadow-mode",
+  "version": "0.1.0",
+  "description": "Run an AI agent in shadow mode — observe, compare, and build a trust track record before going live",
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "MuVeraAI Corporation <oss@muverai.com>",
+  "homepage": "https://github.com/aumos-ai/agent-shadow-mode",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aumos-ai/agent-shadow-mode.git"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^9.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.4.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
