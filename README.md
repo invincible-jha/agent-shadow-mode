@@ -9,6 +9,30 @@ Run an AI agent in shadow mode — observe real decisions, generate parallel rec
 
 ---
 
+## Why Does This Exist?
+
+Every new AI agent starts with an uncomfortable question: how do you know it is safe to trust it with real consequences before you have any evidence that it behaves correctly? The obvious answer — "put it in production and watch" — is unacceptable when wrong decisions mean money lost, customers harmed, or regulations violated.
+
+Traditional software testing solves part of this problem. Unit tests verify logic; integration tests verify wiring. But AI agents are probabilistic. Their outputs shift with input distribution, model updates, and edge cases no test suite could enumerate. You cannot test an agent into trustworthiness — you have to observe it.
+
+Shadow mode is the missing step between staging and production. You run your new agent against every real request your production system receives, capture what it *would have done*, compare that to what production *actually did*, and accumulate a scored track record over days or weeks. No one gets hurt. No side effects fire. When the track record is strong enough, a human decides to promote the agent. The tool never makes that decision for you.
+
+**The driving-simulator analogy:** A learner driver does not start on a motorway. They first train in a simulator that mirrors real road conditions — the same traffic, the same decisions — but without real consequences. Shadow mode is that simulator for AI agents. Practice with real traffic, no real stakes.
+
+**Without this tool:** Teams either over-trust new agents (deploy fast, discover failures in production) or under-trust them (keep humans in the loop forever, never gaining the efficiency benefit of automation). Shadow mode gives you the evidence to make the promotion decision rationally instead of politically.
+
+---
+
+## Who Is This For?
+
+| Audience | Use Case |
+|---|---|
+| **Developer** | Evaluate a new agent version before replacing the production agent |
+| **Enterprise** | Build an auditable evidence trail for governance and compliance review before any automated action is approved |
+| **Both** | A/B test policy changes or model upgrades without exposing users to unverified behaviour |
+
+---
+
 ## What Is Shadow Mode?
 
 Shadow mode lets you run a new AI agent or decision system in parallel with an existing (production) system, without exposing its outputs to end users or triggering side effects. You capture what the shadow agent *would have done*, compare it to what the production agent *actually did*, and accumulate a scored track record.
@@ -46,77 +70,103 @@ npm install @aumos/shadow-mode
 
 ## Quick Start (Python)
 
+**Prerequisites:** Python >= 3.10
+
+```bash
+pip install agent-shadow-mode
+```
+
 ```python
 import asyncio
 from shadow_mode import ShadowRunner, ShadowComparator, ConfidenceScorer
 from shadow_mode.adapters import GenericAdapter
+from shadow_mode.types import ActualDecision
 
-async def my_production_agent(input_data: dict) -> dict:
-    # your existing agent logic
-    return {"action": "approve", "reason": "within_policy"}
-
-async def my_shadow_agent(input_data: dict) -> dict:
-    # new agent being evaluated
+async def candidate_agent(input_data: dict[str, object]) -> dict[str, object]:
     return {"action": "approve", "reason": "within_policy"}
 
 async def main() -> None:
-    adapter = GenericAdapter()
-    runner = ShadowRunner(agent_fn=my_shadow_agent, adapter=adapter)
-
-    # Run shadow execution — no side effects
+    runner = ShadowRunner(agent_fn=candidate_agent, adapter=GenericAdapter())
     shadow_decision = await runner.shadow_execute({"amount": 500, "user": "alice"})
 
-    # Capture what production actually did
-    from shadow_mode.types import ActualDecision
     actual = ActualDecision(
         decision_id=shadow_decision.decision_id,
         output={"action": "approve", "reason": "within_policy"},
         timestamp=shadow_decision.timestamp,
     )
-
-    comparator = ShadowComparator()
-    comparison = comparator.compare(shadow_decision, actual)
-    print(f"Agreement: {comparison.agreed}")
-
-    scorer = ConfidenceScorer()
-    report = scorer.score([comparison])
-    print(report.recommendation)
+    comparison = ShadowComparator().compare(shadow_decision, actual)
+    report = ConfidenceScorer().score([comparison])
+    print(report.recommendation)  # "Based on 1 decision, continue collecting data."
 
 asyncio.run(main())
 ```
+
+**What just happened?**
+1. `ShadowRunner` executed `candidate_agent` inside a side-effect-free context — no HTTP calls, no DB writes, no queue messages left the process.
+2. `ShadowComparator` compared the shadow output to what production actually returned.
+3. `ConfidenceScorer` aggregated the result into a plain-English recommendation string. After enough comparisons, that string tells a human reviewer whether the track record justifies promotion.
 
 ---
 
 ## Quick Start (TypeScript)
 
-```typescript
-import { ShadowRunner, ShadowComparator, ConfidenceScorer } from "@aumos/shadow-mode";
+**Prerequisites:** Node.js >= 20
 
-const runner = new ShadowRunner(async (input) => {
+```bash
+npm install @aumos/shadow-mode
+```
+
+```typescript
+import { ShadowRunner, ShadowComparator, ConfidenceScorer, type ActualDecision } from "@aumos/shadow-mode";
+
+const runner = new ShadowRunner(async (input: Record<string, unknown>) => {
   return { action: "approve", reason: "within_policy" };
 });
 
 const shadowDecision = await runner.shadowExecute({ amount: 500, user: "alice" });
 
-const actual = {
+const actual: ActualDecision = {
   decisionId: shadowDecision.decisionId,
   output: { action: "approve", reason: "within_policy" },
   timestamp: new Date().toISOString(),
 };
 
-const comparator = new ShadowComparator();
-const comparison = comparator.compare(shadowDecision, actual);
-
-const scorer = new ConfidenceScorer();
-const report = scorer.score([comparison]);
+const comparison = new ShadowComparator().compare(shadowDecision, actual);
+const report = new ConfidenceScorer().score([comparison]);
 console.log(report.recommendation);
+// "Based on 1 decision, continue collecting data."
 ```
+
+**What just happened?**
+The candidate agent ran without touching any real external systems. The comparator checked agreement between its output and what production returned. The scorer produced a plain-English string — no automated trust changes, no side effects, just evidence for a human reviewer.
 
 ---
 
 ## Architecture
 
 See [docs/architecture.md](docs/architecture.md) for the full design.
+
+### AumOS Ecosystem Placement
+
+```mermaid
+flowchart TD
+    UserRequest([User Request]) --> ProductionAgent[Production Agent\n existing, trusted]
+    UserRequest --> ShadowRunner[ShadowRunner\n candidate agent]
+
+    ProductionAgent -->|actual decision| Recorder[ShadowRecorder\n JSONL / in-memory]
+    ShadowRunner -->|shadow recommendation\nno side effects| Recorder
+
+    Recorder --> Comparator[ShadowComparator]
+    Comparator --> Scorer[ConfidenceScorer]
+    Scorer -->|plain-English string| HumanReviewer([Human Reviewer])
+
+    HumanReviewer -->|manual decision| TrustGate[aumos-core\nTrustGate]
+
+    classDef ext fill:#f5f5f5,stroke:#999
+    classDef shadow fill:#e8f4e8,stroke:#4a9
+    class UserRequest,HumanReviewer ext
+    class ShadowRunner,Recorder,Comparator,Scorer shadow
+```
 
 ### Core Components
 
@@ -135,6 +185,17 @@ See [docs/architecture.md](docs/architecture.md) for the full design.
 | `GenericAdapter` | Wraps any Python callable |
 | `LangChainAdapter` | Intercepts LangChain tool calls |
 | `CrewAIAdapter` | Intercepts CrewAI task execution |
+
+---
+
+## Related Projects
+
+| Project | Relationship |
+|---|---|
+| [aumos-core](https://github.com/aumos-ai/aumos-core) | Trust Ladder and Trust Gate — the system shadow mode feeds evidence into (via human decision) |
+| [governance-linter](https://github.com/aumos-ai/governance-linter) | Catches governance gaps at development time; shadow mode catches behavioural gaps at runtime |
+| [mcp-server-trust-gate](https://github.com/aumos-ai/mcp-server-trust-gate) | MCP server for runtime policy enforcement — a natural promotion target after shadow mode approval |
+| [agent-benchmark-governance](https://github.com/aumos-ai/agent-benchmark-governance) | Batch evaluation benchmarks; shadow mode is the continuous, production-traffic complement |
 
 ---
 
