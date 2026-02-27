@@ -5,6 +5,7 @@ Run an AI agent in shadow mode — observe real decisions, generate parallel rec
 [![PyPI](https://img.shields.io/pypi/v/agent-shadow-mode)](https://pypi.org/project/agent-shadow-mode/)
 [![npm](https://img.shields.io/npm/v/@aumos/shadow-mode)](https://www.npmjs.com/package/@aumos/shadow-mode)
 [![License: BSL-1.1](https://img.shields.io/badge/License-BSL%201.1-blue)](LICENSE)
+[![Governance Score](https://img.shields.io/badge/governance-self--assessed-blue)](https://github.com/aumos-ai/agent-shadow-mode)
 
 ---
 
