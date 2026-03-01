@@ -6,18 +6,20 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "agent-shadow-mode"
+name = "aumos-shadow-mode"
 version = "0.1.0"
-description = "Run an AI agent in shadow mode — observe, compare, and build a trust track record before going live"
+description = "Run an AI agent in shadow mode — observe, compare, and build a track record before going live"
 readme = "README.md"
 license = { text = "Business Source License 1.1" }
 requires-python = ">=3.10"
 authors = [
     { name = "MuVeraAI Corporation", email = "oss@muverai.com" },
 ]
+keywords = ["aumos", "shadow-mode", "agent-testing", "ai-agents", "governance", "ai-safety"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
+    "License :: Other/Proprietary License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",

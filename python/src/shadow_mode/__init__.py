@@ -36,7 +36,10 @@ Quick start::
 """
 
 from .comparator import ShadowComparator
+from .cost_tracker import CostReport, CostTracker, ModelPricing, TokenUsage
 from .recorder import ShadowRecorder
+from .replay import ShadowReplay, ShadowRun
+from .stats import ShadowStats, ShadowStatsCollector, chi_squared_divergence
 from .report import ShadowReporter
 from .runner import ShadowExecutionError, ShadowRunner
 from .scorer import ConfidenceScorer
@@ -59,6 +62,18 @@ __all__ = [
     "ShadowReporter",
     # Errors
     "ShadowExecutionError",
+    # Stats
+    "ShadowStats",
+    "ShadowStatsCollector",
+    "chi_squared_divergence",
+    # Replay
+    "ShadowReplay",
+    "ShadowRun",
+    # Cost tracking
+    "CostTracker",
+    "CostReport",
+    "ModelPricing",
+    "TokenUsage",
     # Types
     "ShadowDecision",
     "ActualDecision",

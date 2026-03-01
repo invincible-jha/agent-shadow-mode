@@ -2,7 +2,7 @@
   "name": "@aumos/shadow-mode",
   "version": "0.1.0",
   "description": "Run an AI agent in shadow mode — observe, compare, and build a trust track record before going live",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "BSL-1.1",
   "author": "MuVeraAI Corporation <oss@muverai.com>",
   "homepage": "https://github.com/aumos-ai/agent-shadow-mode",
   "repository": {
@@ -13,8 +13,22 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
+  "keywords": [
+    "aumos",
+    "shadow-mode",
+    "agent-testing",
+    "ai-agents",
+    "governance",
+    "ai-safety"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
